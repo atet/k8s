@@ -1,10 +1,11 @@
 # [atet](https://github.com/atet) / [**_k8s_**](https://github.com/atet/k8s/blob/main/README.md#atet--k8s)
 
-[![.img/logo_template.png](.img/logo_template.png)](#nolink)
+<p align="center"><img src=".img/logo_k8s.gif" alt=".img/logo_k8s.gif">
+</br><font style="font-size: 50px"><b>kubernetes</b></font></p>
 
-# Kubernetes
+# Container Orchestration with Kubernetes
 
-SUBTITLE.
+This tutorial will get you up and running with a Kubernetes cluster in less than 10 mins. You must have SSH access to at least two cloud instances (AWS, Digital Ocean, etc.) or on-premises computers (e.g., a laptop and a Raspberry Pi on the same network) to successfully get through these instructions.
 
 ----------------------------------------------------------------------------
 
@@ -21,29 +22,11 @@ SUBTITLE.
 * [Other Resources](#other-resources)
 * [Troubleshooting](#troubleshooting)
 
-> NOTE: Make sure there's spacing to allow Markdown to work with HTML elements
-
-<details open>
-<summary>Want to ruin the surprise?</summary>
-
-- Thing 1
-- Thing 2
-
-</details>
-
-<details>
-<summary>Want a surprise? (CLICK TO EXPAND)</summary>
-
-1. Thing A
-2. Thing B
-
-</details>
-
 ----------------------------------------------------------------------------
 
 ## 0. Requirements
 
-REQUIREMENTS.
+You must have access to at least two cloud or on-premises resources before beginning. Ensure that they are networked together and can communicate with one another through a LAN or public internet.
 
 [Back to Top](#table-of-contents)
 
@@ -51,7 +34,7 @@ REQUIREMENTS.
 
 ## 1. Introduction
 
-INTRODUCTION.
+We will be using the "k3s" certified Kubernetes distribution by Rancher. It is a lightweight version of the more fully featured Kubernetes "k8s" originally designed by Google. The k3s version is meant to be used by resouce-constrained hardware like ARM single-board computers with limited RAM. A big advantage is that it is a smaller software distribution that is much easier to install.
 
 [Back to Top](#table-of-contents)
 
