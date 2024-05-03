@@ -14,13 +14,14 @@ This tutorial will get you up and running with a Kubernetes cluster in less than
 * [0. Requirements](#0-requirements)
 * [1. Introduction](#1-introduction)
 * [2. Installation](#2-installation)
-* [3. Basic Examples](#3-basic-examples)
+* [3. Basic Service Example](#3-basic-service-example)
 * [4. Next Steps](#4-next-steps)
 
 ### Supplemental
 
 * [Other Resources](#other-resources)
 * [Troubleshooting](#troubleshooting)
+* [Acknowledgements](#acknowledgements)
 
 ----------------------------------------------------------------------------
 
@@ -59,20 +60,20 @@ Here, we will first install the k3s software on the server node, then configure 
 
 ### Server Node
 
-1. To have Kubernetes work correctly, all resources must have swap diabled and comment any line regarding swap in `/etc/fstab`:
+2.1. To have Kubernetes work correctly, all resources must have swap diabled and comment any line regarding swap in `/etc/fstab`:
 
 ```bash
 $ swapoff -a
 $ nano /etc/fstab
 ```
 
-2. Update everything, reboot, wait a minute, and **log back on**:
+2.2. Update everything, reboot, wait a minute, and **log back on**:
 
 ```bash
 $ apt update && apt -y upgrade && reboot
 ```
 
-3. Install k3s and wait until it finishes with "`Starting k3s`":
+2.3. Install k3s and wait until it finishes with "`Starting k3s`":
 
 ```bash
 $ curl -sfL https://get.k3s.io | sudo bash -
@@ -82,13 +83,13 @@ $ curl -sfL https://get.k3s.io | sudo bash -
 [INFO]  systemd: Starting k3s
 ```
 
-4. Check that the k3s service is running (press '`q`' to quit):
+2.4. Check that the k3s service is running (press '`q`' to quit):
 
 ```bash
 $ systemctl status k3s.service
 ```
 
-5. Copy configuration and add environmental variable:
+2.5. Copy configuration and add environmental variable:
 
 ```bash
 $ mkdir ~/.kube && \
@@ -98,7 +99,7 @@ $ mkdir ~/.kube && \
   source ~/.bashrc
 ```
 
-6. Print and copy the server's k3s token, which is needed for the agent node (example below):
+2.6. Print and copy the server's k3s token, which is needed for the agent node (example below):
 
 ```bash
 $ cat /var/lib/rancher/k3s/server/node-token
@@ -106,7 +107,7 @@ $ cat /var/lib/rancher/k3s/server/node-token
 1234567890123456789012345678901234567890123456789012345678901234567::server:89012345678901234567890123456789
 ```
 
-7. Get the server's public (if using cloud) or local IP address (if using LAN):
+2.7. Get the server's public (if using cloud) or local IP address (if using LAN):
 
 ```bash
 $ ip ad
@@ -125,14 +126,14 @@ $ ip ad
 
 ### Agent Node
 
-8. Comment any line regarding swap in `/etc/fstab`, disable swap, update everything, reboot, wait a minute, and **log back on**:
+2.8. Comment any line regarding swap in `/etc/fstab`, disable swap, update everything, reboot, wait a minute, and **log back on**:
 
 ```bash
 $ nano /etc/fstab
 $ swapoff -a && apt update && apt -y upgrade && reboot
 ```
 
-9. Install k3s with the server's token and IP address:
+2.9. Install k3s with the server's token and IP address:
 ```
 $ ControlIP="123.456.789.1" && \
   ControlTOKEN="1234567890123456789012345678901234567890123456789012345678901234567::server:89012345678901234567890123456789" && \
@@ -145,9 +146,88 @@ Congratulations! You now have Kubernetes cluster set up on a server and agent no
 
 ----------------------------------------------------------------------------
 
-## 3. Basic Examples
+## 3. Basic Service Example
 
-BASIC EXAMPLES.
+On the server node, we'll stand up an NGINX webserver container, start the NGINX service, and navigate to the default website. 
+
+3.1. Check the status of your server and agent nodes (your node's names may be different):
+
+```bash
+$ kubectl get nodes
+
+NAME       STATUS   ROLES                  AGE    VERSION
+server     Ready    control-plane,master   5m     v1.29.4+k3s1
+agent      Ready    <none>                 6m     v1.29.4+k3s1
+```
+
+3.2. Create a deployment script and copy/paste the contents below:
+
+```bash
+$ nano deploy-nginx.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment 
+spec:
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: nginx 
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest 
+        ports:
+        - containerPort: 80
+```
+
+3.3. Deploy NGINX on the k3s cluster:
+
+```bash
+$ kubectl apply -f deploy-nginx.yaml
+```
+
+3.4. Create a service script and copy/paste the contents below:
+
+```bash
+$ nano nginx-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: NodePort
+```
+3.5. Start the NGINX service on the k3s cluster:
+
+```bash
+$ kubectl apply -f nginx-service.yaml
+```
+
+3.6. Check services and copy NodePort's port (your port number may be different):
+```
+$ kubectl get service
+
+NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)        AGE
+kubernetes      ClusterIP   10.43.0.1    <none>        443/TCP        2m
+nginx-service   NodePort    10.43.46.9   <none>        80:30999/TCP   1m
+```
+
+3.7. On a web browser, navigate to the server's public IP address and NodePort's port, e.g., `123.456.789.1:30999`:
+
+[![.img/fig2_nginx.png](.img/fig2_nginx.png)](#nolink)
 
 [Back to Top](#table-of-contents)
 
@@ -165,7 +245,7 @@ NEXT STEPS.
 
 **Description** | **URL Link**
 --- | ---
-null | null
+Official k3s Documentation | https://docs.k3s.io/
 
 [Back to Top](#table-of-contents)
 
@@ -176,6 +256,14 @@ null | null
 Issue | Solution
 --- | ---
 **"It's not working!"** | This concise tutorial has distilled hours of sweat, tears, and troubleshooting; _it can't not work_
+
+[Back to Top](#table-of-contents)
+
+----------------------------------------------------------------------------
+
+## Acknowledgements
+
+- Thank you Computing for Geeks for your k3s tutorial: https://computingforgeeks.com/installing-k3s-on-ubuntu-noble-numbat/
 
 [Back to Top](#table-of-contents)
 
