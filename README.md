@@ -229,13 +229,33 @@ nginx-service   NodePort    10.43.46.9   <none>        80:30999/TCP   1m
 
 [![.img/fig2_nginx.png](.img/fig2_nginx.png)](#nolink)
 
+Congratulations! You now have a working Kubernetes k3s cluster that can host services like websites or even perform tasks like machine learning training.
+
 [Back to Top](#table-of-contents)
 
 ----------------------------------------------------------------------------
 
 ## 4. Next Steps
 
-NEXT STEPS.
+To uninstall Kubernetes k3s:
+- If you are using cloud resources, just destroy all your instances.
+- If you are using local resources:
+
+Server
+
+```bash
+$ kubectl delete -f nginx-service.yaml
+$ kubectl delete -f deploy-nginx.yaml
+$ systemctl stop k3s
+$ k3s-uninstall.sh
+```
+
+Agent
+
+```
+$ systemctl stop k3s-agent
+$ k3s-agent-uninstall.sh
+```
 
 [Back to Top](#table-of-contents)
 
